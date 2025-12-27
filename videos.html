@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf‑8">
+<meta charset="utf-8">
 <title>ARCS</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
@@ -119,10 +119,13 @@ iframe{
 <script>
 /* ------------------------------------------------ configuration -------------------------------- */
 const SHARE_BASE =
-  "https://yan-1-related-1.github.io/yan-1-website-shared-links-redirecting/archive-profile-images-page-shared-links-redirecting.html?image_id=";
+  "https://yan-1-related-1.github.io/yan-1-website-shared-links-redirecting/archive-profile-videos-page-shared-links-redirecting.html?video_id=";
 
 /* ------------------------------------------------ utilities ----------------------------------- */
-function getQueryParam(name){ const q = new URLSearchParams(window.location.search); return q.get(name); }
+function getQueryParam(name){ 
+  const q = new URLSearchParams(window.location.search); 
+  return q.get(name); 
+}
 function recordKey(obj, index){ return obj.id ?? obj.image_id ?? index; }
 
 /* ------------------------------------------------ share‑dialog --------------------------------- */
@@ -189,7 +192,9 @@ async function loadVideos(){
 
   const container  = document.getElementById('gallery');
   container.innerHTML='';
-  const targetId = getQueryParam('image_id');
+
+  /* ←––––––––––––– change here: read video_id param & highlight ****************** */
+  const targetId = getQueryParam('video_id');
 
   items.forEach((obj, index)=>{
     const card = document.createElement('div');
@@ -254,7 +259,7 @@ async function loadVideos(){
     container.appendChild(card);
   });
 
-  /* ----------------- highlight / focus : if image_id param supplied ------------ */
+  /* ----------------- highlight / focus : if video_id param supplied ------------ */
   if (targetId){
     setTimeout(()=>{
       const tgt = document.querySelector(`.card[data-pdf-id="${targetId}"]`);
