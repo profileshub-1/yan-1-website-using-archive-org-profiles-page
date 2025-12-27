@@ -77,7 +77,7 @@
     #shareDialog{
         display:none;
         position:fixed;
-        top:50%;left:50%;
+        top:50%; left:50%;
         transform:translate(-50%,-50%);
         background:#1e293b;
         padding:20px;
@@ -123,18 +123,18 @@
 const SHARE_BASE =
     "https://yan-1-related-1.github.io/yan-1-website-shared-links-redirecting/archive-profile-pdfs-page-shared-links-redirecting.html?pdf_id=";
 
-// Utility: read URL query param
+// Read a query‑string parameter
 function getQueryParam(name) {
     const q = new URLSearchParams(window.location.search);
     return q.get(name);
 }
 
-// Utility: unique identifier for a record
+// Return the unique key for a record (used for share link and highlighting)
 function recordKey(obj, index) {
     return obj.id ?? obj.pdf_id ?? index;
 }
 
-// Show share popup
+// Show the Share dialog with the generated link
 function showShareDialog(link) {
     const dlg = document.getElementById('shareDialog');
     const inp = document.getElementById('shareLinkInput');
@@ -142,7 +142,7 @@ function showShareDialog(link) {
     dlg.style.display = 'block';
 }
 
-// Copy link → clipboard
+// Copy the link from the dialog to clipboard
 function copyShareLink() {
     const inp = document.getElementById('shareLinkInput');
     inp.select();
@@ -150,7 +150,7 @@ function copyShareLink() {
     alert('Link copied to clipboard!');
 }
 
-// Hide dialog when clicking outside
+// Hide the dialog when clicking outside of it
 document.addEventListener('click', ev => {
     const dlg = document.getElementById('shareDialog');
     if (dlg.style.display === 'block' && !dlg.contains(ev.target)) {
@@ -158,14 +158,14 @@ document.addEventListener('click', ev => {
     }
 });
 
-// Fullscreen request for an iframe
+// Ask the browser to toggle fullscreen for an element
 function requestFullscreen(frame) {
     if (frame.requestFullscreen) frame.requestFullscreen();
     else if (frame.webkitRequestFullscreen) frame.webkitRequestFullscreen();
     else if (frame.msRequestFullscreen) frame.msRequestFullscreen();
 }
 
-// Main loader
+// Main load routine
 async function loadPDFs() {
     const resp = await fetch('pdfs.json');
     const items = await resp.json();
@@ -180,9 +180,9 @@ async function loadPDFs() {
         card.className = 'card';
 
         const key = recordKey(obj, index);
-        card.dataset.pdfId = key;
+        card.dataset.pdfId = key;          // so we can highlight later
 
-        // Embed URL
+        // Build the embed URL
         const embedUrl = obj.archive_url.replace('/details/', '/embed/');
 
         const iframe = document.createElement('iframe');
@@ -210,10 +210,11 @@ async function loadPDFs() {
         note.textContent = obj.note ?? '';
         card.appendChild(note);
 
-        // All remaining metadata
+        // Show all metadata except archive_url & comment_url
         const metaDiv = document.createElement('div');
         metaDiv.className = 'metadata';
         Object.entries(obj).forEach(([k, v]) => {
+            if (k === 'archive_url' || k === 'comment_url') return;   // skip these
             const metaItem = document.createElement('div');
             metaItem.className = 'meta-item';
             const keySpan = document.createElement('span');
@@ -237,7 +238,7 @@ async function loadPDFs() {
         fsBtn.className = 'icon-btn';
         fsBtn.title = 'Fullscreen';
         fsBtn.innerHTML = '⛶';
-        fsBtn.onclick = () => { requestFullscreen(iframe); };
+        fsBtn.onclick = () => requestFullscreen(iframe);
         btnGroup.appendChild(fsBtn);
 
         // Comments icon
@@ -245,7 +246,7 @@ async function loadPDFs() {
         cmBtn.className = 'icon-btn';
         cmBtn.title = 'Comments';
         cmBtn.innerHTML = '💬';
-        cmBtn.onclick = () => { window.open(obj.comment_url, '_blank'); };
+        cmBtn.onclick = () => window.open(obj.comment_url, '_blank');
         btnGroup.appendChild(cmBtn);
 
         // Share icon
@@ -263,7 +264,7 @@ async function loadPDFs() {
         container.appendChild(card);
     });
 
-    // If query param exists, highlight and (optionally) fullscreen
+    // If a pdf_id param is present, highlight the corresponding card and open it
     if (targetId) {
         setTimeout(() => {
             const tgt = document.querySelector(`.card[data-pdf-id="${targetId}"]`);
@@ -271,7 +272,7 @@ async function loadPDFs() {
                 tgt.classList.add('highlight');
                 tgt.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-                // Attempt to put the PDF in fullscreen automatically
+                // Try opening the PDF in fullscreen after a short delay
                 const fframe = tgt.querySelector('iframe');
                 if (fframe) setTimeout(() => requestFullscreen(fframe), 700);
             }
