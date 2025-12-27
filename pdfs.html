@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VERSE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #0f172a;
+        color: #f8fafc;
+        padding: 20px;
+        margin: 0;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .card {
+        background: rgba(255,255,255,0.08);
+        padding: 15px;
+        border-radius: 10px;
+        backdrop-filter: blur(6px);
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    iframe {
+        width: 100%;
+        height: 300px;
+        border: none;
+        border-radius: 8px;
+        background: #000;
+    }
+
+    .title {
+        font-size: 18px;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+
+    .date {
+        opacity: 0.8;
+        margin-top: 5px;
+    }
+
+    .note {
+        margin-top: 8px;
+        opacity: 0.9;
+    }
+
+    .button-group {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .comment-link, .fullscreen-btn {
+        padding: 6px 12px;
+        background: #1e40af;
+        color: #fff;
+        border-radius: 5px;
+        text-decoration: none;
+        text-align: center;
+        cursor: pointer;
+        border: none;
+        font-size: 14px;
+    }
+
+    .comment-link:hover, .fullscreen-btn:hover {
+        background: #1d4ed8;
+    }
+</style>
+</head>
+<body>
+
+<h1>VERSE</h1>
+
+<div id="gallery" class="grid"></div>
+
+<script>
+async function loadPDFs() {
+    const response = await fetch("pdfs.json");
+    const items = await response.json();
+
+    const container = document.getElementById("gallery");
+    container.innerHTML = "";
+
+    items.forEach((obj) => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        // Convert archive_url → embed URL
+        const embedURL = obj.archive_url.replace("/details/", "/embed/");
+
+        // PDF iframe (only content, no Archive UI)
+        const pdfFrame = document.createElement("iframe");
+        pdfFrame.src = embedURL;
+        pdfFrame.allowFullscreen = true;
+        pdfFrame.style.border = "none";
+        pdfFrame.style.background = "#fff"; // optional: white background for PDF
+        card.appendChild(pdfFrame);
+
+        // Title, date, note
+        const title = document.createElement("div");
+        title.className = "title";
+        title.textContent = obj.title;
+        card.appendChild(title);
+
+        const date = document.createElement("div");
+        date.className = "date";
+        date.textContent = obj.date;
+        card.appendChild(date);
+
+        const note = document.createElement("div");
+        note.className = "note";
+        note.textContent = obj.note;
+        card.appendChild(note);
+
+        // Button group
+        const btnGroup = document.createElement("div");
+        btnGroup.className = "button-group";
+
+        // Fullscreen button (iframe only)
+        const fullscreenBtn = document.createElement("button");
+        fullscreenBtn.className = "fullscreen-btn";
+        fullscreenBtn.textContent = "Fullscreen";
+        fullscreenBtn.onclick = () => {
+            if (pdfFrame.requestFullscreen) {
+                pdfFrame.requestFullscreen();
+            } else if (pdfFrame.webkitRequestFullscreen) {
+                pdfFrame.webkitRequestFullscreen();
+            } else if (pdfFrame.msRequestFullscreen) {
+                pdfFrame.msRequestFullscreen();
+            }
+        };
+        btnGroup.appendChild(fullscreenBtn);
+
+        // Comments button → opens in new tab
+        const commentBtn = document.createElement("button");
+        commentBtn.className = "comment-link";
+        commentBtn.textContent = "Comments";
+        commentBtn.onclick = () => {
+            window.open(obj.comment_url, "_blank");
+        };
+        btnGroup.appendChild(commentBtn);
+
+        card.appendChild(btnGroup);
+        container.appendChild(card);
+    });
+}
+
+loadPDFs();
+</script>
+
+</body>
+</html>
