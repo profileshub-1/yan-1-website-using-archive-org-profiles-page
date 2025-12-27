@@ -40,7 +40,7 @@ iframe{
 }
 
 /* ------------------------------------- meta ------------------------------------- */
-.title{font-size:18px;margin-top:10px;font-weight:bold;}
+.title{font-size:18x;margin-top:10px;font-weight:bold;}
 .date{opacity:.8;margin-top:5px;}
 .note{margin-top:8px;opacity:.9;}
 .metadata{font-size:.9rem;margin-top:8px;opacity:.9;}
@@ -189,13 +189,14 @@ async function loadPDFs(){
 
   const container  = document.getElementById('gallery');
   container.innerHTML='';
-  const targetId = getQueryParam('pdf_id');
+  /* NOTE: use image_id query parameter (not pdf_id) */
+  const targetId = getQueryParam('image_id');
 
   items.forEach((obj, index)=>{
     const card = document.createElement('div');
     card.className='card';
     const key = recordKey(obj, index);
-    card.dataset.pdfId = key;          /* for highlight later */
+    card.dataset.pdfId = key;          /* we keep the attribute name, targetId will match */
 
     /* ---- iframe (or image) ------------------------------------------------- */
     const embedUrl = obj.archive_url
@@ -254,7 +255,7 @@ async function loadPDFs(){
     container.appendChild(card);
   });
 
-  /* ----------------- highlight / focus : if pdf_id param supplied ------------ */
+  /* ----------------- highlight / focus : if image_id param supplied ------------ */
   if (targetId){
     setTimeout(()=>{
       const tgt = document.querySelector(`.card[data-pdf-id="${targetId}"]`);
