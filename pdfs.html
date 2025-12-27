@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>VERSE</title>
+<title>VERSES</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
@@ -67,7 +67,7 @@ iframe{
   align-items:center;
   justify-content:center;
 }
-.icon-btn:hover{background:#1d4ed8;}
+.icon-btn:hover{background:#1d4eb8;}
 .card.highlight{border:2px solid #3b82f6;}
 
 /* ------------------------------------- share modal --------------------------------- */
@@ -94,24 +94,24 @@ iframe{
   color:#f8fafc;
 }
 #shareDialog button{
-  padding:6px 12px;
+  padding:6px 12px;
   background:#1e40af;
   color:#fff;
   border:none;
   border-radius:5px;
   cursor:pointer;
 }
-#shareDialog button:hover{background:#1d4ed8;}
+#shareDialog button:hover{background:#1d4eb8;}
 </style>
 </head>
 
 <body>
-<h1>VERSE</h1>
+<h1>VERSES</h1>
 <div id="gallery" class="grid"></div>
 
 <!-- Share modal -->
 <div id="shareDialog">
-  <p>Share this PDF:</p>
+  <p>Share this VERSE:</p>
   <input type="text" id="shareLinkInput" readonly>
   <button onclick="copyShareLink()">Copy</button>
 </div>
@@ -123,6 +123,7 @@ const SHARE_BASE =
 
 /* ------------------------------------------------ utilities ----------------------------------- */
 function getQueryParam(name){ const q = new URLSearchParams(window.location.search); return q.get(name); }
+/* id is used for both numeric id or pdf_id field */
 function recordKey(obj, index){ return obj.id ?? obj.pdf_id ?? index; }
 
 /* ------------------------------------------------ share‑dialog --------------------------------- */
@@ -157,36 +158,33 @@ function requestFullscreen(frame){
 }
 
 /* ------------------------------------------------ web‑share ------------------------------------- */
-async function sharePdf(link, title){
-  // 1️⃣ try native web‑share
+async function shareVerse(link, title){
   if (navigator.share){
     try{
       await navigator.share({
-        title: title || 'Shared PDF',
-        text:  'Take a look at this PDF',
+        title: title || 'Shared VERSE',
+        text:  'Take a look at this VERSE',
         url:   link
       });
-      return;               // successful
-    }catch(_){ /* user cancelled or error – fall‑back */
-    }
+      return;
+    }catch(_){ /* user cancelled or error - fall‑back */ }
   }
-  // 2️⃣ fallback to modal
   showShareDialog(link);
 }
 
 /* ------------------------------------------------ main --------------------------------------- */
 async function loadPDFs(){
-  const resp = await fetch('pdfs.json');
-  const items = await resp.json();
+  const resp   = await fetch('pdfs.json');
+  const items  = await resp.json();
 
-  /* Order newest → oldest */
+  /* newest → oldest */
   items.sort((a,b)=>{
     const ai = typeof a.id==='number'? a.id : (Number(a.id)||0);
     const bi = typeof b.id==='number'? b.id : (Number(b.id)||0);
     return bi - ai;
   });
 
-  const container  = document.getElementById('gallery');
+  const container = document.getElementById('gallery');
   container.innerHTML='';
   const targetId = getQueryParam('pdf_id');
 
@@ -194,10 +192,12 @@ async function loadPDFs(){
     const card = document.createElement('div');
     card.className='card';
     const key = recordKey(obj, index);
-    card.dataset.pdfId = key;          /* for highlight later */
+    card.dataset.pdfId = key;          /* for highlight */
 
-    /* ---- iframe ------------------------------------------------- */
-    const embedUrl = obj.archive_url.replace('/details/','/embed/');
+    /* ------ iframe (PDF) ------------------------------------------------- */
+    const embedUrl = obj.archive_url
+          ? obj.archive_url.replace('/details/','/embed/')
+          : (obj.pdf_url ?? '');
     const iframe = document.createElement('iframe');
     iframe.src = embedUrl;
     iframe.allowFullscreen = true;
@@ -205,14 +205,15 @@ async function loadPDFs(){
     iframe.style.background = '#fff';
     card.appendChild(iframe);
 
-    /* ---- metadata ------------------------------------------------ */
-    const title = document.createElement('div'); title.className='title'; title.textContent = obj.title ?? ''; card.appendChild(title);
-    const date  = document.createElement('div'); date.className='date';  date.textContent = obj.date ?? '';  card.appendChild(date);
-    const note  = document.createElement('div'); note.className='note';  note.textContent = obj.note ?? '';  card.appendChild(note);
+    /* ------ metadata ------------------------------------------------ */
+    const titleDiv = document.createElement('div'); titleDiv.className='title'; titleDiv.textContent = obj.title ?? ''; card.appendChild(titleDiv);
+    const dateDiv  = document.createElement('div'); dateDiv.className='date';  dateDiv.textContent = obj.date ?? '';  card.appendChild(dateDiv);
+    const noteDiv  = document.createElement('div'); noteDiv.className='note';  noteDiv.textContent = obj.note ?? '';  card.appendChild(noteDiv);
 
     const metaDiv = document.createElement('div'); metaDiv.className='metadata';
+    const skip = new Set(['title','date','note','archive_url','comment_url','pdf_id','id']);
     Object.entries(obj).forEach(([k,v])=>{
-      if (k==='archive_url' || k==='comment_url') return; // skip URLs used for UI
+      if (skip.has(k)) return;
       const item = document.createElement('div'); item.className='meta-item';
       const keySpan = document.createElement('span'); keySpan.className='meta-key'; keySpan.textContent = k + ':';
       const valSpan = document.createElement('span'); valSpan.className='meta-value'; valSpan.textContent = typeof v==='object'? JSON.stringify(v) : `${v}`;
@@ -221,7 +222,7 @@ async function loadPDFs(){
     });
     card.appendChild(metaDiv);
 
-    /* ---- buttons ------------------------------------------------ */
+    /* ------ buttons ------------------------------------------------ */
     const btnGroup = document.createElement('div'); btnGroup.className='button-group';
 
     /* Fullscreen button */
@@ -236,13 +237,13 @@ async function loadPDFs(){
     cmBtn.onclick = ()=>window.open(obj.comment_url,'_blank');
     btnGroup.appendChild(cmBtn);
 
-    /* Share button – uses Web‑Share API or fallback modal */
+    /* Share button */
     const shBtn = document.createElement('button');
     shBtn.className='icon-btn'; shBtn.title='Share'; shBtn.innerHTML='🔗';
     shBtn.onclick = function(e){
-      e.stopPropagation();                         // prevent modal auto‑hide
+      e.stopPropagation();
       const shareLink = SHARE_BASE + encodeURIComponent(key);
-      sharePdf(shareLink, obj.title);
+      shareVerse(shareLink, obj.title);
     };
     btnGroup.appendChild(shBtn);
 
@@ -250,7 +251,7 @@ async function loadPDFs(){
     container.appendChild(card);
   });
 
-  /* ----------------- highlight / focus : if pdf_id param supplied ------------ */
+  /* Automatically highlight/focus the requested PDF and open it */
   if (targetId){
     setTimeout(()=>{
       const tgt = document.querySelector(`.card[data-pdf-id="${targetId}"]`);
@@ -258,7 +259,11 @@ async function loadPDFs(){
         tgt.classList.add('highlight');
         tgt.scrollIntoView({behavior:'smooth',block:'center'});
         const fframe = tgt.querySelector('iframe');
-        if (fframe) setTimeout(()=>requestFullscreen(fframe),700);
+        if (fframe){
+          // Open the PDF in a new tab/window, then optionally fullscreen it
+          setTimeout(()=>window.open(fframe.src,'_blank'),300);
+          setTimeout(()=>requestFullscreen(fframe),700);
+        }
       }
     },150);
   }
