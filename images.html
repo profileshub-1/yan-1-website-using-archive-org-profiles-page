@@ -162,8 +162,8 @@ async function sharePdf(link, title){
   if (navigator.share){
     try{
       await navigator.share({
-        title: title || 'Shared PDF',
-        text:  'Take a look at this PDF',
+        title: title || 'Shared Flash',
+        text:  'Take a look at this flash',
         url:   link
       });
       return;               // successful
@@ -176,7 +176,7 @@ async function sharePdf(link, title){
 
 /* ------------------------------------------------ main --------------------------------------- */
 async function loadPDFs(){
-  // connect to images.json instead of pdfs.json
+  // load images JSON
   const resp   = await fetch('images.json');
   const items  = await resp.json();
 
@@ -209,13 +209,14 @@ async function loadPDFs(){
     card.appendChild(iframe);
 
     /* ---- metadata ------------------------------------------------ */
-    const title = document.createElement('div'); title.className='title'; title.textContent = obj.title ?? ''; card.appendChild(title);
-    const date  = document.createElement('div'); date.className='date';  date.textContent = obj.date ?? '';  card.appendChild(date);
-    const note  = document.createElement('div'); note.className='note';  note.textContent = obj.note ?? '';  card.appendChild(note);
+    const titleDiv = document.createElement('div'); titleDiv.className='title'; titleDiv.textContent = obj.title ?? ''; card.appendChild(titleDiv);
+    const dateDiv  = document.createElement('div'); dateDiv.className='date';  dateDiv.textContent = obj.date ?? '';  card.appendChild(dateDiv);
+    const noteDiv  = document.createElement('div'); noteDiv.className='note';  noteDiv.textContent = obj.note ?? '';  card.appendChild(noteDiv);
 
     const metaDiv = document.createElement('div'); metaDiv.className='metadata';
+    const skip = new Set(['title','date','note','archive_url','comment_url','image_url']);
     Object.entries(obj).forEach(([k,v])=>{
-      if (k==='archive_url' || k==='comment_url') return;
+      if (skip.has(k)) return;
       const item = document.createElement('div'); item.className='meta-item';
       const keySpan = document.createElement('span'); keySpan.className='meta-key'; keySpan.textContent = k + ':';
       const valSpan = document.createElement('span'); valSpan.className='meta-value'; valSpan.textContent = typeof v==='object'? JSON.stringify(v) : `${v}`;
