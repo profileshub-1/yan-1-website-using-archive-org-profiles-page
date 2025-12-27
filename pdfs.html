@@ -43,6 +43,7 @@ iframe{
 .title{font-size:18px;margin-top:10px;font-weight:bold;}
 .date{opacity:.8;margin-top:5px;}
 .note{margin-top:8px;opacity:.9;}
+.id{font-size:.9rem;margin-top:4px;color:#888;}
 .metadata{font-size:.9rem;margin-top:8px;opacity:.9;}
 .meta-item{display:flex;gap:5px;flex-wrap:wrap;}
 .meta-key{font-weight:bold;}
@@ -123,7 +124,7 @@ const SHARE_BASE =
 
 /* ------------------------------------------------ utilities ----------------------------------- */
 function getQueryParam(name){ const q = new URLSearchParams(window.location.search); return q.get(name); }
-/* id is used for both numeric id or pdf_id field */
+/* combine id / pdf_id or index */
 function recordKey(obj, index){ return obj.id ?? obj.pdf_id ?? index; }
 
 /* ------------------------------------------------ share‑dialog --------------------------------- */
@@ -205,11 +206,15 @@ async function loadPDFs(){
     iframe.style.background = '#fff';
     card.appendChild(iframe);
 
-    /* ------ metadata ------------------------------------------------ */
+    /* ------ title / date / note ---------------------------------------- */
     const titleDiv = document.createElement('div'); titleDiv.className='title'; titleDiv.textContent = obj.title ?? ''; card.appendChild(titleDiv);
     const dateDiv  = document.createElement('div'); dateDiv.className='date';  dateDiv.textContent = obj.date ?? '';  card.appendChild(dateDiv);
     const noteDiv  = document.createElement('div'); noteDiv.className='note';  noteDiv.textContent = obj.note ?? '';  card.appendChild(noteDiv);
 
+    /* --- show ID ---------------------------------------- */
+    const idDiv = document.createElement('div'); idDiv.className='id'; idDiv.textContent = 'ID: ' + key; card.appendChild(idDiv);
+
+    /* ------ metadata ------------------------------------------- */
     const metaDiv = document.createElement('div'); metaDiv.className='metadata';
     const skip = new Set(['title','date','note','archive_url','comment_url','pdf_id','id']);
     Object.entries(obj).forEach(([k,v])=>{
@@ -222,22 +227,22 @@ async function loadPDFs(){
     });
     card.appendChild(metaDiv);
 
-    /* ------ buttons ------------------------------------------------ */
+    /* ------ buttons ----------------------------------------- */
     const btnGroup = document.createElement('div'); btnGroup.className='button-group';
 
-    /* Fullscreen button */
+    /* Fullscreen */
     const fsBtn = document.createElement('button');
     fsBtn.className='icon-btn'; fsBtn.title='Fullscreen'; fsBtn.innerHTML='⛶';
     fsBtn.onclick = ()=>requestFullscreen(iframe);
     btnGroup.appendChild(fsBtn);
 
-    /* Comments button */
+    /* Comments */
     const cmBtn = document.createElement('button');
     cmBtn.className='icon-btn'; cmBtn.title='Comments'; cmBtn.innerHTML='💬';
     cmBtn.onclick = ()=>window.open(obj.comment_url,'_blank');
     btnGroup.appendChild(cmBtn);
 
-    /* Share button */
+    /* Share */
     const shBtn = document.createElement('button');
     shBtn.className='icon-btn'; shBtn.title='Share'; shBtn.innerHTML='🔗';
     shBtn.onclick = function(e){
