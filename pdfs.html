@@ -10,10 +10,9 @@
         font-family:Arial,Helvetica,sans-serif;
         background:#0f172a;
         color:#f8fafc;
-        padding:20px;
-        margin:0;
+        margin:0;                /* no margin so grid touches sides */
     }
-    h1{ text-align:center; margin-bottom:20px; }
+    h1{ text-align:center; margin:0 0 20px; }
 
     .grid{
         display:grid;
@@ -23,7 +22,7 @@
     }
 
     .card{
-        background:rgba(255,255,255,0.08);
+        background:rgba(255,255,255,.08);
         padding:15px;
         border-radius:10px;
         backdrop-filter:blur(6px);
@@ -34,7 +33,7 @@
 
     iframe{
         width:100%;
-        height:300px;
+        height:400px;              /* more space for the PDF */
         border:none;
         border-radius:8px;
         background:#000;
@@ -44,7 +43,7 @@
     .date{opacity:.8;margin-top:5px;}
     .note{margin-top:8px;opacity:.9;}
 
-    /* META display */
+    /* Metadata block */
     .metadata{font-size:.9rem;margin-top:8px;opacity:.9;}
     .meta-item{display:flex;gap:5px;flex-wrap:wrap;}
     .meta-key{font-weight:bold;}
@@ -120,71 +119,70 @@
 </div>
 
 <script>
+/* ---- configuration ------------------------------------------------------ */
 const SHARE_BASE =
-    "https://yan-1-related-1.github.io/yan-1-website-shared-links-redirecting/archive-profile-pdfs-page-shared-links-redirecting.html?pdf_id=";
+  "https://yan-1-related-1.github.io/yan-1-website-shared-links-redirecting/archive-profile-pdfs-page-shared-links-redirecting.html?pdf_id=";
 
-// Read a query‑string parameter
-function getQueryParam(name) {
-    const q = new URLSearchParams(window.location.search);
-    return q.get(name);
-}
+/* ---- utilities --------------------------------------------------------- */
+function getQueryParam(name){ const q = new URLSearchParams(window.location.search); return q.get(name); }
+function recordKey(obj, index){ return obj.id ?? obj.pdf_id ?? index; }
 
-// Return the unique key for a record (used for share link and highlighting)
-function recordKey(obj, index) {
-    return obj.id ?? obj.pdf_id ?? index;
-}
-
-// Show the Share dialog with the generated link
-function showShareDialog(link) {
+/* ---- share dialog ------------------------------------------------------- */
+function showShareDialog(link){
     const dlg = document.getElementById('shareDialog');
     const inp = document.getElementById('shareLinkInput');
     inp.value = link;
     dlg.style.display = 'block';
 }
-
-// Copy the link from the dialog to clipboard
-function copyShareLink() {
+function copyShareLink(){
     const inp = document.getElementById('shareLinkInput');
     inp.select();
-    document.execCommand('copy');
-    alert('Link copied to clipboard!');
+    if (navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(inp.value).then(()=>alert('Link copied to clipboard!'));
+    } else {
+        document.execCommand('copy');
+        alert('Link copied to clipboard!');
+    }
 }
-
-// Hide the dialog when clicking outside of it
-document.addEventListener('click', ev => {
+document.addEventListener('click', ev=>{
     const dlg = document.getElementById('shareDialog');
-    if (dlg.style.display === 'block' && !dlg.contains(ev.target)) {
-        dlg.style.display = 'none';
+    if (dlg.style.display==='block' && !dlg.contains(ev.target)){
+        dlg.style.display='none';
     }
 });
 
-// Ask the browser to toggle fullscreen for an element
-function requestFullscreen(frame) {
+/* ---- fullscreen -------------------------------------------------------- */
+function requestFullscreen(frame){
     if (frame.requestFullscreen) frame.requestFullscreen();
     else if (frame.webkitRequestFullscreen) frame.webkitRequestFullscreen();
     else if (frame.msRequestFullscreen) frame.msRequestFullscreen();
 }
 
-// Main load routine
-async function loadPDFs() {
+/* ---- main function ----------------------------------------------------- */
+async function loadPDFs(){
     const resp = await fetch('pdfs.json');
     const items = await resp.json();
+
+    /* Sort by id descending (numeric or as string) */
+    items.sort((a,b)=>{
+        const ai = typeof a.id==='number'? a.id : (Number(a.id)||0);
+        const bi = typeof b.id==='number'? b.id : (Number(b.id)||0);
+        return bi - ai;
+    });
 
     const container = document.getElementById('gallery');
     container.innerHTML = '';
 
     const targetId = getQueryParam('pdf_id');
 
-    items.forEach((obj, index) => {
+    items.forEach((obj, index)=>{
         const card = document.createElement('div');
-        card.className = 'card';
-
+        card.className='card';
         const key = recordKey(obj, index);
-        card.dataset.pdfId = key;          // so we can highlight later
+        card.dataset.pdfId = key;          // for later highlighting
 
-        // Build the embed URL
-        const embedUrl = obj.archive_url.replace('/details/', '/embed/');
-
+        /* Iframe */
+        const embedUrl = obj.archive_url.replace('/details/','/embed/');
         const iframe = document.createElement('iframe');
         iframe.src = embedUrl;
         iframe.allowFullscreen = true;
@@ -192,91 +190,55 @@ async function loadPDFs() {
         iframe.style.background = '#fff';
         card.appendChild(iframe);
 
-        // Title
-        const title = document.createElement('div');
-        title.className = 'title';
-        title.textContent = obj.title ?? '';
-        card.appendChild(title);
+        /* Metadata */
+        const title = document.createElement('div'); title.className='title'; title.textContent = obj.title ?? ''; card.appendChild(title);
+        const date  = document.createElement('div'); date.className='date';  date.textContent = obj.date ?? '';  card.appendChild(date);
+        const note  = document.createElement('div'); note.className='note';  note.textContent = obj.note ?? '';  card.appendChild(note);
 
-        // Date
-        const date = document.createElement('div');
-        date.className = 'date';
-        date.textContent = obj.date ?? '';
-        card.appendChild(date);
-
-        // Note
-        const note = document.createElement('div');
-        note.className = 'note';
-        note.textContent = obj.note ?? '';
-        card.appendChild(note);
-
-        // Show all metadata except archive_url & comment_url
-        const metaDiv = document.createElement('div');
-        metaDiv.className = 'metadata';
-        Object.entries(obj).forEach(([k, v]) => {
-            if (k === 'archive_url' || k === 'comment_url') return;   // skip these
-            const metaItem = document.createElement('div');
-            metaItem.className = 'meta-item';
-            const keySpan = document.createElement('span');
-            keySpan.className = 'meta-key';
-            keySpan.textContent = k + ':';
-            const valSpan = document.createElement('span');
-            valSpan.className = 'meta-value';
-            valSpan.textContent = typeof v === 'object' ? JSON.stringify(v) : `${v}`;
-            metaItem.appendChild(keySpan);
-            metaItem.appendChild(valSpan);
-            metaDiv.appendChild(metaItem);
+        const metaDiv = document.createElement('div'); metaDiv.className='metadata';
+        Object.entries(obj).forEach(([k,v])=>{
+            if (k==='archive_url' || k==='comment_url') return; // skip UI URLs
+            const item = document.createElement('div'); item.className='meta-item';
+            const keySpan = document.createElement('span'); keySpan.className='meta-key'; keySpan.textContent = k + ':';
+            const valSpan = document.createElement('span'); valSpan.className='meta-value'; valSpan.textContent = typeof v==='object'? JSON.stringify(v) : `${v}`;
+            item.appendChild(keySpan); item.appendChild(valSpan);
+            metaDiv.appendChild(item);
         });
         card.appendChild(metaDiv);
 
-        // Button group
-        const btnGroup = document.createElement('div');
-        btnGroup.className = 'button-group';
+        /* Buttons */
+        const btnGroup = document.createElement('div'); btnGroup.className='button-group';
 
-        // Fullscreen icon
         const fsBtn = document.createElement('button');
-        fsBtn.className = 'icon-btn';
-        fsBtn.title = 'Fullscreen';
-        fsBtn.innerHTML = '⛶';
-        fsBtn.onclick = () => requestFullscreen(iframe);
+        fsBtn.className='icon-btn'; fsBtn.title='Fullscreen'; fsBtn.innerHTML='⛶';
+        fsBtn.onclick = ()=>requestFullscreen(iframe);
         btnGroup.appendChild(fsBtn);
 
-        // Comments icon
         const cmBtn = document.createElement('button');
-        cmBtn.className = 'icon-btn';
-        cmBtn.title = 'Comments';
-        cmBtn.innerHTML = '💬';
-        cmBtn.onclick = () => window.open(obj.comment_url, '_blank');
+        cmBtn.className='icon-btn'; cmBtn.title='Comments'; cmBtn.innerHTML='💬';
+        cmBtn.onclick = ()=>window.open(obj.comment_url,'_blank');
         btnGroup.appendChild(cmBtn);
 
-        // Share icon
         const shBtn = document.createElement('button');
-        shBtn.className = 'icon-btn';
-        shBtn.title = 'Share';
-        shBtn.innerHTML = '🔗';
-        shBtn.onclick = () => {
-            const link = SHARE_BASE + encodeURIComponent(key);
-            showShareDialog(link);
-        };
+        shBtn.className='icon-btn'; shBtn.title='Share'; shBtn.innerHTML='🔗';
+        shBtn.onclick = ()=>{ showShareDialog(SHARE_BASE + encodeURIComponent(key)); };
         btnGroup.appendChild(shBtn);
 
         card.appendChild(btnGroup);
         container.appendChild(card);
     });
 
-    // If a pdf_id param is present, highlight the corresponding card and open it
-    if (targetId) {
-        setTimeout(() => {
+    /* If a pdf_id is supplied, highlight / focus that card */
+    if (targetId){
+        setTimeout(()=>{
             const tgt = document.querySelector(`.card[data-pdf-id="${targetId}"]`);
-            if (tgt) {
+            if (tgt){
                 tgt.classList.add('highlight');
-                tgt.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-                // Try opening the PDF in fullscreen after a short delay
+                tgt.scrollIntoView({behavior:'smooth',block:'center'});
                 const fframe = tgt.querySelector('iframe');
-                if (fframe) setTimeout(() => requestFullscreen(fframe), 700);
+                if (fframe) setTimeout(()=>requestFullscreen(fframe),700);
             }
-        }, 150);
+        },150);
     }
 }
 
