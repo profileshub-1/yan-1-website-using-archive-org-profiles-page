@@ -1,113 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8">
-  <title>ARC App</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf‑8">
+<title>ProFileX</title>                     <!-- Site title -->
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-  <!-- ----------------------------------------------------
-       The CSS – no changes from your original snippet
-  ---------------------------------------------------- -->
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #f8fafc;
-      margin: 0;
-      padding: 0;
-    }
+<!-- ----------------------------------------------------
+     The CSS – no changes from your original snippet
+---------------------------------------------------- -->
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: #f8fafc;
+    margin: 0;
+    padding: 0;
+  }
 
-    header {
-      background: #1e40af;
-      padding: 15px;
-      text-align: center;
-    }
+  header {
+    background: #1e40af;
+    padding: 15px;
+    text-align: center;
+  }
 
-    header h1 {
-      margin: 0;
-      font-size: 24px;
-    }
+  header h1 {
+    margin: 0;
+    font-size: 24px;
+  }
 
-    nav {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      background: #1d4ed8;
-      padding: 10px 0;
-    }
+  nav {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    background: #1d4ed8;
+    padding: 10px 0;
+  }
 
-    nav button {
-      padding: 8px 16px;
-      background: #3b82f6;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background .2s;
-    }
+  nav button {
+    padding: 8px 16px;
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background .2s;
+  }
 
-    nav button:hover {
-      background: #2563eb;
-    }
+  nav button:hover {
+    background: #2563eb;
+  }
 
-    #content {
-      padding: 20px;
-    }
+  #content {
+    padding: 20px;
+  }
 
-    iframe {
-      width: 100%;
-      height: 80vh;
-      border: none;
-      border-radius: 8px;
-      background: #000;
-    }
-  </style>
+  iframe {
+    width: 100%;
+    height: 80vh;
+    border: none;
+    border-radius: 8px;
+    background: #000;
+  }
+</style>
 </head>
 
 <body>
-  <!-- Header -->
-  <header>
-    <h1>ARC App</h1>
-  </header>
+<!-- Header – includes an easy‑to‑recognise symbol -->
+<header>
+  <h1>👤 ProFileX</h1>                     <!-- Added user icon -->
+</header>
 
-  <!-- Navigation -->
-  <nav>
-    <button onclick="loadPage('profiles.html')">PERSONA</button>
-    <button onclick="loadPage('images.html')">FLASHES</button>
-    <button onclick="loadPage('videos.html')">ARCS</button>
-    <button onclick="loadPage('pdfs.html')">VERSES</button>
-  </nav>
+<!-- Navigation -->
+<nav>
+  <button onclick="loadPage('profiles.html')">PERSONA</button>
+  <button onclick="loadPage('images.html')">FLASHES</button>
+  <button onclick="loadPage('videos.html')">ARCS</button>
+  <button onclick="loadPage('pdfs.html')">VERSES</button>
+</nav>
 
-  <!-- Main content area -->
-  <div id="content">
-    <!-- The iframe that loads the selected page -->
-    <iframe
-      id="pageFrame"
-      src=""
-      title="Content panel"
-      allowfullscreen
-      allow="autoplay; fullscreen; camera; microphone; clipboard-write; clipboard-read; geolocation; display-capture; speaker; encrypted-media">
-    </iframe>
-  </div>
+<!-- Main content area -->
+<div id="content">
+  <!-- The iframe that loads the selected page -->
+  <iframe
+    id="pageFrame"
+    src=""
+    title="Content panel"
+    allowfullscreen
+    allow="autoplay; fullscreen; camera; microphone; clipboard-write; clipboard-read; geolocation; display-capture; speaker; encrypted-media">
+  </iframe>
+</div>
 
-  <!-- JavaScript – keeps the logic the same but uses the
-       "default" load on window.onload
-  -->
-  <script>
-    const iframe = document.getElementById('pageFrame');
+<!-- JavaScript – keeps the logic the same but uses the “default” load on window.onload -->
+<script>
+  const iframe = document.getElementById('pageFrame');
 
-    // change iframe src to the chosen page
-    function loadPage(page) {
-      iframe.src = page;
-    }
+  // change iframe src to the chosen page
+  function loadPage(page) {
+    iframe.src = page;
+  }
 
-    // load PERSONA (profiles.html) by default
-    window.addEventListener('load', () => {
-      loadPage('profiles.html');
-    });
-  </script>
+  // load PERSONA (profiles.html) by default
+  window.addEventListener('load', () => {
+    loadPage('profiles.html');
+  });
+</script>
 </body>
-
 </html>
