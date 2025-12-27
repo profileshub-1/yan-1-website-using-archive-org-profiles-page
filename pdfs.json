@@ -4,7 +4,8 @@
     "comment_url": "https://github.com/yan-shun-180/testing_websites_1/discussions/2",
     "title": "Sample PDF 1",
     "date": "2025-12-04",
-    "note": "This is the first sample PDF."
+    "note": "This is the first sample PDF",
+    "others": "testing."
   },
   {
     "archive_url": "https://archive.org/details/nrt_20251008",
